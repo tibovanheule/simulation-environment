@@ -43,13 +43,18 @@ class LocomotionTask(composer.Task):
     def _configure_agent_observables(self) -> None:
         self._morphology.observables.enable_all()
 
-    def _get_agent_position(self, physics: mjcf.Physics) -> np.ndarray:
+    def _get_morphology_position(self, physics: mjcf.Physics) -> np.ndarray:
         position, quaternion = self._morphology.get_pose(physics=physics)
         return position
 
+    def _get_time(self, physics: mjcf.Physics) -> np.ndarray:
+        return physics.time()
+
     def _configure_task_observables(self) -> Dict[str, observable.Observable]:
         task_observables = dict()
-        task_observables["robot_position"] = observable.Generic(self._get_agent_position)
+
+        task_observables["time"] = observable.Generic(self._get_time)
+        task_observables["robot_position"] = observable.Generic(self._get_morphology_position)
 
         for obs in task_observables.values():
             obs.enabled = True
