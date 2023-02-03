@@ -4,7 +4,7 @@ import numpy as np
 
 from erpy.interfaces.mujoco.phenome import MJCMorphology, MJCMorphologyPart
 from erpy.utils import colors
-from simulation_environment.brittle_star.specification import BrittleStarMorphologySpecification
+from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification
 
 
 class MJCBrittleStarDisc(MJCMorphologyPart):

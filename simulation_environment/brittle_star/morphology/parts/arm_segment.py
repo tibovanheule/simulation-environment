@@ -6,7 +6,7 @@ from dm_control import mjcf
 
 from erpy.interfaces.mujoco.phenome import MJCMorphologyPart, MJCMorphology
 from erpy.utils import colors
-from simulation_environment.brittle_star.specification import BrittleStarMorphologySpecification, \
+from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification, \
     BrittleStarJointSpecification
 
 

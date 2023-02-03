@@ -1,6 +1,6 @@
 import numpy as np
 
-from simulation_environment.brittle_star.specification import BrittleStarMorphologySpecification, \
+from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification, \
     BrittleStarDiscSpecification, BrittleStarJointSpecification, BrittleStarArmSegmentSpecification, \
     BrittleStarArmSpecification, BrittleStarTendonSpecification
 

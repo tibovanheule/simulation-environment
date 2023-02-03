@@ -3,11 +3,11 @@ from dm_control import mjcf
 
 from erpy.interfaces.mujoco.phenome import MJCMorphology
 from erpy.utils import colors
-from simulation_environment.brittle_star import examples
-from simulation_environment.brittle_star.observables import BrittleStarObservables
-from simulation_environment.brittle_star.parts.arm import MJCBrittleStarArm
-from simulation_environment.brittle_star.parts.disc import MJCBrittleStarDisc
-from simulation_environment.brittle_star.specification import BrittleStarMorphologySpecification
+from simulation_environment.brittle_star.morphology.observables import BrittleStarObservables
+from simulation_environment.brittle_star.morphology.parts.arm import MJCBrittleStarArm
+from simulation_environment.brittle_star.morphology.parts.disc import MJCBrittleStarDisc
+from simulation_environment.brittle_star.specification import examples
+from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification
 
 
 class MJCBrittleStarMorphology(MJCMorphology):

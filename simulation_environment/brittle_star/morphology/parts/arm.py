@@ -5,9 +5,9 @@ from dm_control import mjcf
 
 from erpy.interfaces.mujoco.phenome import MJCMorphologyPart, MJCMorphology
 from erpy.utils import colors
-from simulation_environment.brittle_star.parts.arm_segment import MJCBrittleStarArmSegment
-from simulation_environment.brittle_star.specification import BrittleStarMorphologySpecification
-from simulation_environment.brittle_star.utils.tendon import calculate_relaxed_tendon_length
+from simulation_environment.brittle_star.morphology.parts.arm_segment import MJCBrittleStarArmSegment
+from simulation_environment.brittle_star.morphology.utils.tendon import calculate_relaxed_tendon_length
+from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification
 
 
 class MJCBrittleStarArm(MJCMorphologyPart):
