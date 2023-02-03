@@ -18,7 +18,7 @@ class LocomotionTask(composer.Task):
         self.config = config
 
         self._arena = self._build_arena()
-        self._agent = self._attach_agent(agent=morphology)
+        self._morphology = self._attach_morphology(morphology=morphology)
         self._task_observables = self._configure_observables()
 
         self._previous_distance_from_origin = 0.0
@@ -35,16 +35,16 @@ class LocomotionTask(composer.Task):
         arena = Floor()
         return arena
 
-    def _attach_agent(self, agent: MJCMorphology) -> MJCMorphology:
-        self._arena.add_free_entity(entity=agent)
-        agent.after_attachment()
-        return agent
+    def _attach_morphology(self, morphology: MJCMorphology) -> MJCMorphology:
+        self._arena.add_free_entity(entity=morphology)
+        morphology.after_attachment()
+        return morphology
 
     def _configure_agent_observables(self) -> None:
-        self._agent.observables.enable_all()
+        self._morphology.observables.enable_all()
 
     def _get_agent_position(self, physics: mjcf.Physics) -> np.ndarray:
-        position, quaternion = self._agent.get_pose(physics=physics)
+        position, quaternion = self._morphology.get_pose(physics=physics)
         return position
 
     def _configure_task_observables(self) -> Dict[str, observable.Observable]:
@@ -80,9 +80,9 @@ class LocomotionTask(composer.Task):
         initial_position = np.array([0.0, 0.0, 0.5])
         initial_quaternion = euler2quat(0, 0, 0)
 
-        self._agent.set_pose(physics=physics,
-                             position=initial_position,
-                             quaternion=initial_quaternion)
+        self._morphology.set_pose(physics=physics,
+                                  position=initial_position,
+                                  quaternion=initial_quaternion)
 
     def initialize_episode(self, physics: mjcf.Physics, random_state: np.random.RandomState) -> None:
         self._initialize_agent_pose(physics=physics)
