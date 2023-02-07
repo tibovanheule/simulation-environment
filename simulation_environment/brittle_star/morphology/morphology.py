@@ -6,7 +6,8 @@ from erpy.utils import colors
 from simulation_environment.brittle_star.morphology.observables import BrittleStarObservables
 from simulation_environment.brittle_star.morphology.parts.arm import MJCBrittleStarArm
 from simulation_environment.brittle_star.morphology.parts.disc import MJCBrittleStarDisc
-from simulation_environment.brittle_star.specification import examples
+from simulation_environment.brittle_star.specification import default
+from simulation_environment.brittle_star.specification.default import default_brittle_star_morphology_specification
 from simulation_environment.brittle_star.specification.specification import BrittleStarMorphologySpecification
 
 
@@ -81,6 +82,6 @@ class MJCBrittleStarMorphology(MJCMorphology):
 
 
 if __name__ == '__main__':
-    specification = examples.default_brittle_star()
+    specification = default_brittle_star_morphology_specification()
     morphology = MJCBrittleStarMorphology(specification)
     morphology.export_to_xml_with_assets()

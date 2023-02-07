@@ -110,9 +110,9 @@ class MJCBrittleStarArm(MJCMorphologyPart):
             self.mjcf_model.actuator.add('motor',
                                          name=f"{tendon.name}_motor",
                                          tendon=tendon,
-                                         gear=[200],
+                                         gear=[1000],
                                          forcelimited=True,
-                                         forcerange=[-200, 0],
+                                         forcerange=[-1000, 0],
                                          ctrllimited=True,
                                          ctrlrange=[-1, 1])
 

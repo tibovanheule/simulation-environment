@@ -5,17 +5,22 @@ from erpy.framework.specification import MorphologySpecification, Specification
 
 
 class BrittleStarJointSpecification(Specification):
-    def __init__(self, range: Tuple[float, float], stiffness: float, damping: float) -> None:
+    def __init__(self, range: Tuple[float, float], stiffness: float, damping_factor: float) -> None:
+        super().__init__()
         self.range = FixedParameter(value=range)
         self.stiffness = FixedParameter(value=stiffness)
-        self.damping = FixedParameter(value=damping)
+        self.damping_factor = FixedParameter(value=damping_factor)
+
+    @property
+    def damping(self) -> float:
+        return self.stiffness.value * self.damping_factor.value
 
 
 class BrittleStarArmSegmentSpecification(Specification):
-    def __init__(self, radius: float, length: float,
-                 tendon_offset: float,
+    def __init__(self, radius: float, length: float, tendon_offset: float,
                  in_plane_joint_specification: BrittleStarJointSpecification,
                  out_of_plane_joint_specification: BrittleStarJointSpecification) -> None:
+        super().__init__()
         self.radius = FixedParameter(radius)
         self.length = FixedParameter(length)
         self.tendon_offset = FixedParameter(tendon_offset)
@@ -25,6 +30,7 @@ class BrittleStarArmSegmentSpecification(Specification):
 
 class BrittleStarArmSpecification(Specification):
     def __init__(self, segment_specifications: List[BrittleStarArmSegmentSpecification]) -> None:
+        super().__init__()
         self.segment_specifications = segment_specifications
 
     @property
@@ -34,22 +40,23 @@ class BrittleStarArmSpecification(Specification):
 
 class BrittleStarDiscSpecification(Specification):
     def __init__(self, radius: float, height: float) -> None:
+        super().__init__()
         self.radius = FixedParameter(radius)
         self.height = FixedParameter(height)
 
 
 class BrittleStarTendonSpecification(Specification):
     def __init__(self, contraction_factor: float, stretch_factor: float) -> None:
+        super().__init__()
         self.contraction_factor = FixedParameter(contraction_factor)
         self.stretch_factor = FixedParameter(stretch_factor)
 
 
 class BrittleStarMorphologySpecification(MorphologySpecification):
-    def __init__(self, name: str,
-                 disc_specification: BrittleStarDiscSpecification,
+    def __init__(self, disc_specification: BrittleStarDiscSpecification,
                  arm_specifications: List[BrittleStarArmSpecification],
                  tendon_specification: BrittleStarTendonSpecification) -> None:
-        super(BrittleStarMorphologySpecification, self).__init__(name)
+        super(BrittleStarMorphologySpecification, self).__init__()
         self.disc_specification = disc_specification
         self.arm_specifications = arm_specifications
         self.tendon_specification = tendon_specification

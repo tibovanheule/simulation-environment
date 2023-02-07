@@ -32,7 +32,7 @@ class LocomotionTask(composer.Task):
         return self._task_observables
 
     def _build_arena(self) -> composer.Arena:
-        arena = Floor()
+        arena = Floor(size=(20, 20))
         return arena
 
     def _attach_morphology(self, morphology: MJCMorphology) -> MJCMorphology:
@@ -54,7 +54,6 @@ class LocomotionTask(composer.Task):
         task_observables = dict()
 
         task_observables["time"] = observable.Generic(self._get_time)
-        task_observables["robot_position"] = observable.Generic(self._get_morphology_position)
 
         for obs in task_observables.values():
             obs.enabled = True
@@ -67,7 +66,7 @@ class LocomotionTask(composer.Task):
         return task_observables
 
     def _calculate_agent_distance_from_origin(self, physics: mjcf.Physics) -> float:
-        position = self._get_agent_position(physics=physics)
+        position = self._get_morphology_position(physics=physics)
         position_in_xy_plane = position[:2]
         distance_from_origin = np.linalg.norm(position_in_xy_plane)
         return distance_from_origin

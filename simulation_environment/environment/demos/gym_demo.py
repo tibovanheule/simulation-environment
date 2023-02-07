@@ -2,12 +2,12 @@ import numpy as np
 
 from erpy.utils.video import create_video
 from simulation_environment.brittle_star.morphology.morphology import MJCBrittleStarMorphology
-from simulation_environment.brittle_star.specification import examples
+from simulation_environment.brittle_star.specification.default import default_brittle_star_morphology_specification
 from simulation_environment.environment.locomotion.task import LocomotionEnvironmentConfig
 
 if __name__ == '__main__':
     env_config = LocomotionEnvironmentConfig(42, np.random.RandomState(seed=42))
-    specification = examples.default_brittle_star()
+    specification = default_brittle_star_morphology_specification()
     morphology = MJCBrittleStarMorphology(specification=specification)
 
     gym_env = env_config.environment(morphology=morphology,
@@ -24,6 +24,7 @@ if __name__ == '__main__':
         print(f"Step: {step}")
         actions = gym_env.action_space.sample()
         observations, reward, done, info = gym_env.step(actions)
+        print(observations[0])
         step += 1
 
         frame = gym_env.render()

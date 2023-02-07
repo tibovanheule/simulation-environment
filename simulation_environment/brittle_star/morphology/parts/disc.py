@@ -20,6 +20,7 @@ class MJCBrittleStarDisc(MJCMorphologyPart):
         self._disc_specification = self.specification.disc_specification
 
         self._build_cylinder()
+        self._configure_sensors()
 
     def _build_cylinder(self) -> None:
         radius = self.specification.disc_specification.radius.value
@@ -32,3 +33,13 @@ class MJCBrittleStarDisc(MJCMorphologyPart):
                                         euler=np.zeros(3),
                                         size=[radius, height / 2],
                                         rgba=colors.rgba_green)
+
+    def _configure_sensors(self) -> None:
+        self.mjcf_model.sensor.add("framepos",
+                                   name=f"{self.base_name}_framepos",
+                                   objtype="geom",
+                                   objname=self._disc.name)
+        self.mjcf_model.sensor.add("framequat",
+                                   name=f"{self.base_name}_framequat",
+                                   objtype="geom",
+                                   objname=self._disc.name)

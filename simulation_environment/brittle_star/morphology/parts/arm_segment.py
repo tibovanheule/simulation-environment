@@ -61,7 +61,7 @@ class MJCBrittleStarArmSegment(MJCMorphologyPart):
                                    axis=axis,
                                    pos=np.zeros(3),
                                    stiffness=joint_specification.stiffness.value,
-                                   damping=joint_specification.damping.value)
+                                   damping=joint_specification.damping)
         return joint
 
     def _configure_joints(self) -> None:
