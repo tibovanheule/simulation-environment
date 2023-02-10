@@ -2,7 +2,7 @@ import numpy as np
 from dm_control import composer
 from dm_control.composer.observation.observable import MJCFFeature
 from dm_control.mjcf.physics import SynchronizingArrayWrapper
-from scipy.spatial.transform import Rotation
+from transforms3d.euler import quat2euler
 
 from erpy.interfaces.mujoco.observables import ConfinedMJCFFeature
 
@@ -19,50 +19,54 @@ def normalizer_factory(original_range: np.ndarray, target_range: np.ndarray = np
     return normalizer
 
 
-def quaternion_to_euler(quaternion: np.ndarray) -> np.ndarray:
-    return Rotation.from_quat(quaternion).as_euler("xyz", degrees=False)
-
-
 class BrittleStarObservables(composer.Observables):
     @composer.observable
-    def position(self) -> MJCFFeature:
+    def end_effector_YZ_direction(self) -> MJCFFeature:
         sensors = self._entity.mjcf_model.find_all('sensor')
         framepos_sensor = list(filter(lambda sensor: sensor.tag == "framepos", sensors))
+        end_effector_sensors = list(filter(lambda sensor: "end_effector" in sensor.name, framepos_sensor))
 
-        return ConfinedMJCFFeature(low=-np.inf,
-                                   high=np.inf,
-                                   num_obs_per_element=3,
+        def normalize_directions(observations: SynchronizingArrayWrapper, *args, **kwargs):
+            directions = np.array(observations).reshape(-1, 3)
+            for i in range(len(directions)):
+                directions[i] = directions[i] / np.linalg.norm(directions[i])
+
+            directions = directions[:, 1:].flatten()
+            return directions
+
+        return ConfinedMJCFFeature(low=-1,
+                                   high=1,
+                                   num_obs_per_element=2,
                                    kind='sensordata',
-                                   mjcf_element=framepos_sensor)
+                                   mjcf_element=end_effector_sensors,
+                                   corruptor=normalize_directions)
 
     @composer.observable
     def orientation(self) -> MJCFFeature:
         sensors = self._entity.mjcf_model.find_all('sensor')
         framequat_sensor = list(filter(lambda sensor: sensor.tag == "framequat", sensors))
 
-        def quaternion_to_eulers(observations: SynchronizingArrayWrapper, *args, **kwargs) -> np.ndarray:
+        def quaternion_to_normalized_eulers(observations: SynchronizingArrayWrapper, *args, **kwargs) -> np.ndarray:
             data = np.array(observations)
-            eulers = quaternion_to_euler(data)
-            return eulers
+            eulers = np.array(quat2euler(quaternion=data))
 
-        return ConfinedMJCFFeature(low=-np.inf,
-                                   high=np.inf,
-                                   num_obs_per_element=3,
-                                   kind='sensordata',
-                                   mjcf_element=framequat_sensor,
-                                   corruptor=quaternion_to_eulers)
-
-    @composer.observable
-    def normalized_tendon_lengths(self) -> MJCFFeature:
-        sensors = self._entity.mjcf_model.find_all('sensor')
-        tendon_length_sensors = list(filter(lambda sensor: sensor.tag == "tendonpos", sensors))
-
-        original_range = np.array([sensor.tendon.range for sensor in tendon_length_sensors])
-        normalizer = normalizer_factory(original_range=original_range)
+            normalized_eulers = eulers / np.pi
+            return normalized_eulers
 
         return ConfinedMJCFFeature(low=-1,
                                    high=1,
-                                   num_obs_per_element=1,
+                                   num_obs_per_element=3,
                                    kind='sensordata',
-                                   mjcf_element=tendon_length_sensors,
-                                   corruptor=normalizer)
+                                   mjcf_element=framequat_sensor,
+                                   corruptor=quaternion_to_normalized_eulers)
+
+    @composer.observable
+    def cartesian_actuator_ctrl(self) -> MJCFFeature:
+        position_actuators = self._entity.mjcf_model.find_all('actuator')
+
+        return ConfinedMJCFFeature(low=-np.inf,
+                                   high=np.inf,
+                                   num_obs_per_element=1,
+                                   kind='ctrl',
+                                   mjcf_element=position_actuators,
+                                   )

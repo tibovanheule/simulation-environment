@@ -13,18 +13,18 @@ class MJCBrittleStarDisc(MJCMorphologyPart):
         super().__init__(parent, name, pos, euler, *args, **kwargs)
 
     @property
-    def specification(self) -> BrittleStarMorphologySpecification:
-        return super().specification
+    def morphology_specification(self) -> BrittleStarMorphologySpecification:
+        return super().morphology_specification
 
     def _build(self) -> None:
-        self._disc_specification = self.specification.disc_specification
+        self._disc_specification = self.morphology_specification.disc_specification
 
         self._build_cylinder()
         self._configure_sensors()
 
     def _build_cylinder(self) -> None:
-        radius = self.specification.disc_specification.radius.value
-        height = self.specification.disc_specification.height.value
+        radius = self.morphology_specification.disc_specification.radius.value
+        height = self.morphology_specification.disc_specification.height.value
 
         self._disc = self.mjcf_body.add("geom",
                                         name=f"{self.base_name}_disc",
@@ -32,7 +32,8 @@ class MJCBrittleStarDisc(MJCMorphologyPart):
                                         pos=np.zeros(3),
                                         euler=np.zeros(3),
                                         size=[radius, height / 2],
-                                        rgba=colors.rgba_green)
+                                        rgba=colors.rgba_green,
+                                        friction=[0.001, 0.1, 0.1])
 
     def _configure_sensors(self) -> None:
         self.mjcf_model.sensor.add("framepos",

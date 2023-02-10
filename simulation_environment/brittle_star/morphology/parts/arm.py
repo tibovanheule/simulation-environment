@@ -16,18 +16,17 @@ class MJCBrittleStarArm(MJCMorphologyPart):
         super().__init__(parent, name, pos, euler, *args, **kwargs)
 
     @property
-    def specification(self) -> BrittleStarMorphologySpecification:
-        return super().specification
+    def morphology_specification(self) -> BrittleStarMorphologySpecification:
+        return super().morphology_specification
 
     def _build(self, arm_index: int) -> None:
         self._arm_index = arm_index
-        self._arm_specification = self.specification.arm_specifications[self._arm_index]
+        self._arm_specification = self.morphology_specification.arm_specifications[self._arm_index]
 
         self._build_segments()
         self._configure_tendon_attachment_points()
         self._build_tendons()
         self._configure_actuators()
-        self._configure_sensors()
 
     def _build_segments(self) -> None:
         self._segments = []
@@ -89,8 +88,8 @@ class MJCBrittleStarArm(MJCMorphologyPart):
             relaxed_length = calculate_relaxed_tendon_length(morphology_parts=morphology_parts,
                                                              attachment_points=attachment_points)
 
-            contraction_factor = self.specification.tendon_specification.contraction_factor.value
-            stretch_factor = self.specification.tendon_specification.stretch_factor.value
+            contraction_factor = self.morphology_specification.tendon_specification.contraction_factor.value
+            stretch_factor = self.morphology_specification.tendon_specification.stretch_factor.value
             min_tendon_length = (1 - contraction_factor) * relaxed_length
             max_tendon_length = (1 + stretch_factor) * relaxed_length
 
@@ -105,22 +104,41 @@ class MJCBrittleStarArm(MJCMorphologyPart):
 
             self._tendons.append(tendon)
 
-    def _configure_actuators(self) -> None:
-        for tendon in self._tendons:
-            self.mjcf_model.actuator.add('motor',
-                                         name=f"{tendon.name}_motor",
-                                         tendon=tendon,
-                                         gear=[1000],
-                                         forcelimited=True,
-                                         forcerange=[-1000, 0],
+    def _configure_tendon_actuators(self) -> None:
+        if self.morphology_specification.actuation_specification.use_tendons.value:
+            for tendon in self._tendons:
+                self.mjcf_model.actuator.add('motor',
+                                             name=f"{tendon.name}_motor",
+                                             tendon=tendon,
+                                             gear=[500],
+                                             forcelimited=True,
+                                             forcerange=[-500, 0],
+                                             ctrllimited=True,
+                                             ctrlrange=[-1, 1])
+
+    def _configure_cartesian_actuators(self) -> None:
+        if self.morphology_specification.actuation_specification.use_cartesian.value:
+            # Add a reference site
+            reference_site = self.mjcf_body.add('site', name=f"{self.base_name}_cartesian_reference",
+                                                euler=-1 * np.array(self.mjcf_body.euler))
+
+            self.mjcf_model.actuator.add('position',
+                                         name=f"{self.base_name}_cartesian_y",
+                                         site=self._segments[-1].cartesian_site,
+                                         refsite=reference_site,
+                                         gear=[0, 1, 0, 0, 0, 0],
+                                         kp=100,
+                                         ctrllimited=True,
+                                         ctrlrange=[-1, 1])
+            self.mjcf_model.actuator.add('position',
+                                         name=f"{self.base_name}_cartesian_z",
+                                         site=self._segments[-1].cartesian_site,
+                                         refsite=reference_site,
+                                         gear=[0, 0, 1, 0, 0, 0],
+                                         kp=100,
                                          ctrllimited=True,
                                          ctrlrange=[-1, 1])
 
-    def _configure_muscle_length_sensors(self) -> None:
-        for tendon in self._tendons:
-            self.mjcf_model.sensor.add("tendonpos",
-                                       name=f"{tendon.name}_tendonpos",
-                                       tendon=tendon)
-
-    def _configure_sensors(self) -> None:
-        self._configure_muscle_length_sensors()
+    def _configure_actuators(self) -> None:
+        self._configure_tendon_actuators()
+        self._configure_cartesian_actuators()

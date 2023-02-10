@@ -6,7 +6,7 @@ from simulation_environment.brittle_star.specification.default import default_br
 from simulation_environment.environment.locomotion.task import LocomotionEnvironmentConfig
 
 if __name__ == '__main__':
-    env_config = LocomotionEnvironmentConfig(42, np.random.RandomState(seed=42))
+    env_config = LocomotionEnvironmentConfig()
     specification = default_brittle_star_morphology_specification()
     morphology = MJCBrittleStarMorphology(specification=specification)
 

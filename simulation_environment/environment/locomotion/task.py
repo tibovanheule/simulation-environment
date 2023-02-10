@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Dict, Callable
+from typing import Dict, Callable, Union
 
 import numpy as np
 from dm_control import composer
@@ -11,20 +11,22 @@ from dm_control.mujoco.math import euler2quat
 
 from erpy.interfaces.mujoco.environment import MJCEnvironmentConfig
 from erpy.interfaces.mujoco.phenome import MJCMorphology
+from simulation_environment.brittle_star.morphology.morphology import MJCBrittleStarMorphology
 
 
 class LocomotionTask(composer.Task):
-    def __init__(self, config: LocomotionEnvironmentConfig, morphology: MJCMorphology) -> None:
+    def __init__(self, config: LocomotionEnvironmentConfig, morphology: MJCBrittleStarMorphology) -> None:
         self.config = config
 
         self._arena = self._build_arena()
         self._morphology = self._attach_morphology(morphology=morphology)
         self._task_observables = self._configure_observables()
 
+        self._configure_contacts()
         self._previous_distance_from_origin = 0.0
 
     @property
-    def root_entity(self) -> composer.Entity:
+    def root_entity(self) -> Union[composer.Entity, Floor]:
         return self._arena
 
     @property
@@ -35,7 +37,20 @@ class LocomotionTask(composer.Task):
         arena = Floor(size=(20, 20))
         return arena
 
-    def _attach_morphology(self, morphology: MJCMorphology) -> MJCMorphology:
+    def _configure_contacts(self) -> None:
+        geom_default = self.root_entity.mjcf_model.default.geom
+
+        # Disable all collisions between geoms by default
+        geom_default.contype = 1
+        geom_default.conaffinity = 0
+
+        # Set default friction lower to make the sliding-based locomotion a bit easier
+        geom_default.friction = [0.3, 0.1, 0.1]
+
+        # Need to add conaffinity 1 to the floor -> we still want contacts there
+        self.root_entity._ground_geom.conaffinity = 1
+
+    def _attach_morphology(self, morphology: MJCBrittleStarMorphology) -> MJCBrittleStarMorphology:
         self._arena.add_free_entity(entity=morphology)
         morphology.after_attachment()
         return morphology
@@ -44,7 +59,7 @@ class LocomotionTask(composer.Task):
         self._morphology.observables.enable_all()
 
     def _get_morphology_position(self, physics: mjcf.Physics) -> np.ndarray:
-        position, quaternion = self._morphology.get_pose(physics=physics)
+        position, _ = self._morphology.get_pose(physics=physics)
         return position
 
     def _get_time(self, physics: mjcf.Physics) -> np.ndarray:
@@ -53,7 +68,7 @@ class LocomotionTask(composer.Task):
     def _configure_task_observables(self) -> Dict[str, observable.Observable]:
         task_observables = dict()
 
-        task_observables["time"] = observable.Generic(self._get_time)
+        task_observables["task/time"] = observable.Generic(self._get_time)
 
         for obs in task_observables.values():
             obs.enabled = True
@@ -65,23 +80,23 @@ class LocomotionTask(composer.Task):
         task_observables = self._configure_task_observables()
         return task_observables
 
-    def _calculate_agent_distance_from_origin(self, physics: mjcf.Physics) -> float:
+    def _calculate_agent_XY_distance_from_origin(self, physics: mjcf.Physics) -> float:
         position = self._get_morphology_position(physics=physics)
         position_in_xy_plane = position[:2]
-        distance_from_origin = np.linalg.norm(position_in_xy_plane)
-        return distance_from_origin
+        distance = np.linalg.norm(position_in_xy_plane)
+        return distance
 
-    def get_reward(self, physics: mjcf.Physics) -> None:
+    def get_reward(self, physics: mjcf.Physics) -> float:
         # Locomotion reward -> additional distance travelled from origin since previous timestep
         #   Positive if we travelled further, negative if we went back closer to origin
-        current_distance_from_origin = self._calculate_agent_distance_from_origin(physics=physics)
-        reward = current_distance_from_origin - self._previous_distance_from_origin
+        current_distance_from_origin = self._calculate_agent_XY_distance_from_origin(physics=physics)
+        distance_delta = current_distance_from_origin - self._previous_distance_from_origin
         self._previous_distance_from_origin = current_distance_from_origin
-
-        return reward
+        return distance_delta
 
     def _initialize_agent_pose(self, physics: mjcf.Physics) -> None:
-        initial_position = np.array([0.0, 0.0, 0.5])
+        disc_height = self._morphology.morphology_specification.disc_specification.height.value
+        initial_position = np.array([0.0, 0.0, disc_height / 2])
         initial_quaternion = euler2quat(0, 0, 0)
 
         self._morphology.set_pose(physics=physics,
@@ -91,7 +106,7 @@ class LocomotionTask(composer.Task):
     def initialize_episode(self, physics: mjcf.Physics, random_state: np.random.RandomState) -> None:
         self._initialize_agent_pose(physics=physics)
 
-        self._previous_distance_from_origin = self._calculate_agent_distance_from_origin(physics=physics)
+        self._previous_distance_from_origin = self._calculate_agent_XY_distance_from_origin(physics=physics)
 
 
 class LocomotionEnvironmentConfig(MJCEnvironmentConfig):

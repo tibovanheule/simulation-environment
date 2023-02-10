@@ -16,14 +16,14 @@ class MJCBrittleStarArmSegment(MJCMorphologyPart):
         super().__init__(parent, name, pos, euler, *args, **kwargs)
 
     @property
-    def specification(self) -> BrittleStarMorphologySpecification:
-        return super().specification
+    def morphology_specification(self) -> BrittleStarMorphologySpecification:
+        return super().morphology_specification
 
     def _build(self, arm_index: int, segment_index: int) -> None:
         self._arm_index = arm_index
         self._segment_index = segment_index
 
-        self._arm_specification = self.specification.arm_specifications[self._arm_index]
+        self._arm_specification = self.morphology_specification.arm_specifications[self._arm_index]
         self._segment_specification = self._arm_specification.segment_specifications[self._segment_index]
 
         self._tendon_attachment_points = defaultdict(list)
@@ -31,18 +31,20 @@ class MJCBrittleStarArmSegment(MJCMorphologyPart):
         self._build_capsule()
         self._configure_joints()
         self._build_tendon_plates()
+        self._configure_actuators()
+        self._configure_sensors()
 
     def _build_capsule(self) -> None:
         radius = self._segment_specification.radius.value
         length = self._segment_specification.length.value
 
-        self.mjcf_body.add("geom",
-                           name=f"{self.base_name}_capsule",
-                           type="capsule",
-                           pos=self.center_of_capsule,
-                           euler=[0, np.pi / 2, 0],
-                           size=[radius, length / 2],
-                           rgba=colors.rgba_green)
+        self._capsule = self.mjcf_body.add("geom",
+                                           name=f"{self.base_name}_capsule",
+                                           type="capsule",
+                                           pos=self.center_of_capsule,
+                                           euler=[0, np.pi / 2, 0],
+                                           size=[radius, length / 2],
+                                           rgba=colors.rgba_green)
 
     @property
     def center_of_capsule(self) -> np.ndarray:
@@ -123,3 +125,26 @@ class MJCBrittleStarArmSegment(MJCMorphologyPart):
                                                   rgba=colors.rgba_red)
 
             self.tendon_attachment_points[side].append(attachment_point)
+
+    def _is_last_segment(self) -> bool:
+        number_of_segments = len(self._arm_specification.segment_specifications)
+        return self._segment_index == number_of_segments - 1
+
+    def _configure_cartesian_actuators(self) -> None:
+        if self.morphology_specification.actuation_specification.use_cartesian.value:
+            if self._is_last_segment():
+                self.cartesian_site = self.mjcf_body.add('site',
+                                                         name=f"{self.base_name}_cartesian_end_effector",
+                                                         pos=self.center_of_capsule)
+
+    def _configure_actuators(self) -> None:
+        self._configure_cartesian_actuators()
+
+    def _configure_sensors(self):
+        if self._is_last_segment():
+            self.mjcf_model.sensor.add("framepos",
+                                       name=f"{self.base_name}_end_effector_local_pos",
+                                       objtype="geom",
+                                       objname=self._capsule.name,
+                                       reftype="geom",
+                                       refname="central_disc_disc")
