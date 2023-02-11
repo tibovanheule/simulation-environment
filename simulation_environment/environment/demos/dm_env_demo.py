@@ -23,7 +23,8 @@ def oscillatory_policy_fn(timestep: TimeStep) -> np.ndarray:
     global num_actions
 
     time = timestep.observation["task/time"][0]
-
+    z_to_target = timestep.observation["task/z_angle_to_target"][0]
+    print(z_to_target * 180 / np.pi)
     actions = np.zeros(num_actions)
 
     # phase1 = 0
@@ -52,7 +53,7 @@ def oscillatory_policy_fn(timestep: TimeStep) -> np.ndarray:
 
 
 if __name__ == '__main__':
-    env_config = LocomotionEnvironmentConfig()
+    env_config = LocomotionEnvironmentConfig(with_target=True)
     morphology_specification = default_brittle_star_morphology_specification(num_arms=2, num_segments_per_arm=5,
                                                                              use_cartesian_actuation=True)
     robot_specification = RobotSpecification(morphology_specification=morphology_specification,
