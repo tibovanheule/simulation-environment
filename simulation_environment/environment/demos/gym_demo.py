@@ -21,7 +21,6 @@ if __name__ == '__main__':
     step = 0
     frames = []
     while not done:
-        print(f"Step: {step}")
         actions = gym_env.action_space.sample()
         observations, reward, done, info = gym_env.step(actions)
         print(observations[0])
