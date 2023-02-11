@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Dict, Callable, Union, Optional
 
 import numpy as np
+import vg
 from dm_control import composer
 from dm_control import mjcf
 from dm_control.composer.observation import observable
@@ -28,6 +29,7 @@ class LocomotionTask(composer.Task):
 
         self._configure_contacts()
         self._previous_distance = 0.0
+        self._episode_index = -1
 
     @property
     def root_entity(self) -> Union[composer.Entity, Floor]:
@@ -79,25 +81,22 @@ class LocomotionTask(composer.Task):
     def _get_time(self, physics: mjcf.Physics) -> np.ndarray:
         return physics.time()
 
-    def _get_z_angle_to_target(self, physics: mjcf.Physics) -> float:
+    def _get_z_normalized_angle_to_target(self, physics: mjcf.Physics) -> float:
         morphology_position, morphology_quaternion = self._morphology.get_pose(physics)
-        _, _, z_angle = quat2euler(morphology_quaternion)
+        _, _, morphology_z_angle = quat2euler(morphology_quaternion)
         # Negative Y-axis is the main axis of locomotion
-        z_angle = z_angle - np.pi / 2
-        morphology_direction = -1 * np.array([np.cos(z_angle), np.sin(z_angle)])
-        morphology_xy = morphology_position[:2]
+        morphology_z_angle = morphology_z_angle - np.pi / 2
+        morphology_direction = np.array([np.cos(morphology_z_angle), np.sin(morphology_z_angle), 0.0])
 
-        target_position, target_quaternion = self._target.get_pose(physics)
-        target_xy = target_position[:2]
-        direction_to_target = target_xy - morphology_xy
-        try:
-            direction_to_target = direction_to_target / np.linalg.norm(direction_to_target)
-        except RuntimeWarning:
-            # position will be 0 before init -> ignore this
-            pass
+        target_position, _ = self._target.get_pose(physics)
+        direction_to_target = np.array(target_position - morphology_direction)
+        direction_to_target[2] = 0
+        direction_to_target = direction_to_target / np.linalg.norm(direction_to_target)
 
-        angle_to_target = np.arccos(np.clip(np.dot(morphology_direction, direction_to_target), -1.0, 1.0))
-        return angle_to_target
+        z_angle = vg.signed_angle(morphology_direction,
+                                  direction_to_target, look=vg.basis.z)
+        z_angle = z_angle / 180
+        return z_angle
 
     def _configure_task_observables(self) -> Dict[str, observable.Observable]:
         task_observables = dict()
@@ -105,7 +104,8 @@ class LocomotionTask(composer.Task):
         task_observables["task/time"] = observable.Generic(self._get_time)
 
         if self.config.with_target:
-            task_observables["task/z_angle_to_target"] = observable.Generic(self._get_z_angle_to_target)
+            task_observables["task/normalized_z_angle_to_target"] = observable.Generic(
+                self._get_z_normalized_angle_to_target)
 
         for obs in task_observables.values():
             obs.enabled = True
@@ -117,11 +117,22 @@ class LocomotionTask(composer.Task):
         task_observables = self._configure_task_observables()
         return task_observables
 
+    # def get_reward(self, physics: mjcf.Physics) -> float:
+    #     distance_delta = self._calculate_distance_delta(physics)
+    #     if self.config.with_target:
+    #         distance_delta *= -1
+    #     return distance_delta
+
     def get_reward(self, physics: mjcf.Physics) -> float:
-        distance_delta = self._calculate_distance_delta(physics)
         if self.config.with_target:
-            distance_delta *= -1  # we want to get closer to the target
-        return distance_delta
+            z_angle_offset = abs(self._get_z_normalized_angle_to_target(physics))
+            if z_angle_offset < 0.2:
+                return 1.0
+            else:
+                return -z_angle_offset
+        else:
+            distance_delta = self._calculate_distance_delta(physics)
+            return distance_delta
 
     def _initialize_morphology_pose(self, physics: mjcf.Physics) -> None:
         disc_height = self._morphology.morphology_specification.disc_specification.height.value
@@ -133,21 +144,24 @@ class LocomotionTask(composer.Task):
                                   quaternion=initial_quaternion)
 
     def _initialize_target_pose(self, physics: mjcf.Physics) -> None:
-        # Random position at distance 5
-        target_distance_from_origin = 5
-        angle = np.random.uniform(-np.pi, np.pi)
+        if self.config.with_target:
+            # Random position at distance 5
+            target_distance_from_origin = 5
+            # angle = np.random.uniform(-np.pi, np.pi)
+            angle = np.linspace(-np.pi, np.pi, 10)[self._episode_index % 10]
 
-        initial_position = target_distance_from_origin * np.array([np.cos(angle), np.sin(angle), 0.0])
-        initial_quaternion = euler2quat(0, 0, 0)
+            initial_position = target_distance_from_origin * np.array([np.cos(angle), np.sin(angle), 0.0])
+            initial_quaternion = euler2quat(0, 0, 0)
 
-        self._target.set_pose(physics=physics,
-                              position=initial_position,
-                              quaternion=initial_quaternion)
+            self._target.set_pose(physics=physics,
+                                  position=initial_position,
+                                  quaternion=initial_quaternion)
 
     def initialize_episode(self, physics: mjcf.Physics, random_state: np.random.RandomState) -> None:
         self._initialize_morphology_pose(physics=physics)
         self._initialize_target_pose(physics=physics)
         self._previous_distance = self._calculate_distance(physics)
+        self._episode_index += 1
 
     def _calculate_distance_delta(self, physics: mjcf.Physics) -> float:
         current_distance = self._calculate_distance(physics=physics)
@@ -173,6 +187,12 @@ class LocomotionTask(composer.Task):
         else:
             return self._calculate_xy_distance_from_origin(physics=physics)
 
+    def should_terminate_episode(self, physics) -> bool:
+        if self.config.with_target:
+            if self._calculate_distance_to_target(physics) < 0.2:
+                return True
+        return False
+
 
 @dataclass
 class LocomotionEnvironmentConfig(MJCEnvironmentConfig):
@@ -184,7 +204,10 @@ class LocomotionEnvironmentConfig(MJCEnvironmentConfig):
 
     @property
     def simulation_time(self) -> float:
-        return 10.0
+        if self.with_target:
+            return 20.0
+        else:
+            return 10.0
 
     @property
     def num_substeps(self) -> int:

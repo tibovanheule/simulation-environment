@@ -23,8 +23,6 @@ def oscillatory_policy_fn(timestep: TimeStep) -> np.ndarray:
     global num_actions
 
     time = timestep.observation["task/time"][0]
-    z_to_target = timestep.observation["task/z_angle_to_target"][0]
-    print(z_to_target * 180 / np.pi)
     actions = np.zeros(num_actions)
 
     # phase1 = 0
