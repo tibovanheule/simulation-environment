@@ -16,11 +16,11 @@ def default_brittle_star_morphology_specification(num_arms: int = 5,
         for segment_index in range(num_segments_per_arm):
             in_plane_joint_spec = BrittleStarJointSpecification(
                 range=np.array([-10, 10]) / 180 * np.pi,
-                stiffness=10,
+                stiffness=21.674,
                 damping_factor=0.1)
             out_of_plane_joint_spec = BrittleStarJointSpecification(
                 range=np.array([-10, 10]) / 180 * np.pi,
-                stiffness=10,
+                stiffness=21.674,
                 damping_factor=0.1)
             segment_specification = BrittleStarArmSegmentSpecification(
                 radius=0.05, length=0.1, tendon_offset=0.025,
