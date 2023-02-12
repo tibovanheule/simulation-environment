@@ -84,6 +84,9 @@ class MJCBrittleStarMorphology(MJCMorphology):
 
 
 if __name__ == '__main__':
-    specification = default_brittle_star_morphology_specification()
-    morphology = MJCBrittleStarMorphology(specification)
+    specification = default_brittle_star_morphology_specification(num_arms=2, num_segments_per_arm=7,
+                                                                  use_cartesian_actuation=False)
+    robot_specification = RobotSpecification(morphology_specification=specification,
+                                             controller_specification=None)
+    morphology = MJCBrittleStarMorphology(robot_specification)
     morphology.export_to_xml_with_assets()

@@ -25,37 +25,45 @@ def oscillatory_policy_fn(timestep: TimeStep) -> np.ndarray:
     time = timestep.observation["task/time"][0]
     actions = np.zeros(num_actions)
 
-    # phase1 = 0
-    # phase2 = np.pi
-    # frequency = 1
-    #
-    # actions[0::4] = np.sin(frequency * time + phase1)
-    # actions[1::4] = np.sin(frequency * time + phase1)
-    # actions[2::4] = -np.sin(frequency * time + phase1)
-    # actions[3::4] = -np.sin(frequency * time + phase2)
+    # For tendon based control
+    phase1 = 0
+    phase2 = np.pi
+    frequency = 1
 
-    up = np.array([0, 1, 0, 1])
-    down = np.array([0, -1, 0, -1])
-    left = np.array([1, 0, 1, 0])
-    right = np.array([-1, 0, -1, 0])
-    if time % 4 < 1:
-        actions = up + left
-    elif time % 4 < 2:
-        actions = left + down
-    elif time % 4 < 3:
-        actions = down + right
-    else:
-        actions = right + up
+    actions[0::4] = np.sin(frequency * time + phase1)
+    actions[1::4] = np.sin(frequency * time + phase1)
+    actions[2::4] = -np.sin(frequency * time + phase1)
+    actions[3::4] = -np.sin(frequency * time + phase2)
+
+    # # For cartesian based control
+    # actions[0::2] = np.sin(frequency * time + phase1)
+    # actions[1::2] = np.sin(frequency * time + phase2)
+
+    #
+    # # For cartesian based control
+    # arm_up = np.array([0, 1])
+    # arm_down = np.array([0, -1])
+    # arm_left = np.array([1, 0])
+    # arm_right = np.array([-1, 0])
+    #
+    # if time % 4 < 1:
+    #     actions = up + left
+    # elif time % 4 < 2:
+    #     actions = left + down
+    # elif time % 4 < 3:
+    #     actions = down + right
+    # else:
+    #     actions = right + up
 
     return actions
 
 
 if __name__ == '__main__':
     env_config = LocomotionEnvironmentConfig(with_target=True)
-    morphology_specification = default_brittle_star_morphology_specification(num_arms=2, num_segments_per_arm=5,
-                                                                             use_cartesian_actuation=True)
+    morphology_specification = default_brittle_star_morphology_specification(num_arms=5, num_segments_per_arm=10,
+                                                                             use_cartesian_actuation=False)
     robot_specification = RobotSpecification(morphology_specification=morphology_specification,
-                                             controller_specification=True)
+                                             controller_specification=None)
     morphology = MJCBrittleStarMorphology(specification=robot_specification)
     dm_env = env_config.environment(morphology=morphology,
                                     wrap2gym=False)
