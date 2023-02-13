@@ -60,11 +60,12 @@ def oscillatory_policy_fn(timestep: TimeStep) -> np.ndarray:
 
 if __name__ == '__main__':
     env_config = LocomotionEnvironmentConfig(with_target=True)
-    morphology_specification = default_brittle_star_morphology_specification(num_arms=5, num_segments_per_arm=10,
+    morphology_specification = default_brittle_star_morphology_specification(num_arms=2, num_segments_per_arm=5,
                                                                              use_cartesian_actuation=False)
     robot_specification = RobotSpecification(morphology_specification=morphology_specification,
                                              controller_specification=None)
     morphology = MJCBrittleStarMorphology(specification=robot_specification)
+    morphology.export_to_xml_with_assets("tendon")
     dm_env = env_config.environment(morphology=morphology,
                                     wrap2gym=False)
 

@@ -8,8 +8,7 @@ from simulation_environment.brittle_star.specification.specification import Brit
 def default_joint_specification() -> BrittleStarJointSpecification:
     joint_specification = BrittleStarJointSpecification(
         range=np.array([-10, 10]) / 180 * np.pi,
-        # stiffness=21.674,
-        stiffness=500.0,
+        stiffness=21.674,
         damping_factor=0.1)
 
     return joint_specification

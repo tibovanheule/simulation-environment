@@ -89,7 +89,7 @@ class LocomotionTask(composer.Task):
         morphology_direction = np.array([np.cos(morphology_z_angle), np.sin(morphology_z_angle), 0.0])
 
         target_position, _ = self._target.get_pose(physics)
-        direction_to_target = np.array(target_position - morphology_direction)
+        direction_to_target = np.array(target_position - morphology_position)
         direction_to_target[2] = 0
         direction_to_target = direction_to_target / np.linalg.norm(direction_to_target)
 
