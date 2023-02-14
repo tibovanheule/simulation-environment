@@ -46,12 +46,10 @@ def default_brittle_star_morphology_specification(num_arms: int = 5,
         arm_specification = default_arm_specification(num_segments_per_arm=num_segments_per_arm)
         arm_specifications.append(arm_specification)
 
-    tendon_specification = BrittleStarTendonSpecification(contraction_factor=0.5, stretch_factor=2.0)
     actuation_specification = BrittleStarActuationSpecification(use_tendons=not use_cartesian_actuation,
                                                                 use_cartesian=use_cartesian_actuation)
     specification = BrittleStarMorphologySpecification(disc_specification=disc_specification,
                                                        arm_specifications=arm_specifications,
-                                                       tendon_specification=tendon_specification,
                                                        actuation_specification=actuation_specification)
 
     return specification

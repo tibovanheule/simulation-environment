@@ -45,18 +45,11 @@ class BrittleStarDiscSpecification(Specification):
         self.height = FixedParameter(height)
 
 
-class BrittleStarTendonSpecification(Specification):
-    def __init__(self, contraction_factor: float, stretch_factor: float) -> None:
-        super().__init__()
-        self.contraction_factor = FixedParameter(contraction_factor)
-        self.stretch_factor = FixedParameter(stretch_factor)
-
-
 class BrittleStarActuationSpecification(Specification):
     def __init__(self, use_tendons: bool, use_cartesian: bool) -> None:
         super().__init__()
-        assert not(use_tendons and use_cartesian), "Simultaneous use of tendon-based and cartesian-based actuation " \
-                                                   "is not supported."
+        assert not (use_tendons and use_cartesian), "Simultaneous use of tendon-based and cartesian-based actuation " \
+                                                    "is not supported."
         self.use_tendons = FixedParameter(use_tendons)
         self.use_cartesian = FixedParameter(use_cartesian)
 
@@ -64,12 +57,10 @@ class BrittleStarActuationSpecification(Specification):
 class BrittleStarMorphologySpecification(MorphologySpecification):
     def __init__(self, disc_specification: BrittleStarDiscSpecification,
                  arm_specifications: List[BrittleStarArmSpecification],
-                 tendon_specification: BrittleStarTendonSpecification,
                  actuation_specification: BrittleStarActuationSpecification) -> None:
         super(BrittleStarMorphologySpecification, self).__init__()
         self.disc_specification = disc_specification
         self.arm_specifications = arm_specifications
-        self.tendon_specification = tendon_specification
         self.actuation_specification = actuation_specification
 
     @property

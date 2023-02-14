@@ -88,8 +88,8 @@ class MJCBrittleStarArm(MJCMorphologyPart):
             relaxed_length = calculate_relaxed_tendon_length(morphology_parts=morphology_parts,
                                                              attachment_points=attachment_points)
 
-            contraction_factor = self.morphology_specification.tendon_specification.contraction_factor.value
-            stretch_factor = self.morphology_specification.tendon_specification.stretch_factor.value
+            contraction_factor = 0.5
+            stretch_factor = 2.0
             min_tendon_length = (1 - contraction_factor) * relaxed_length
             max_tendon_length = (1 + stretch_factor) * relaxed_length
 
