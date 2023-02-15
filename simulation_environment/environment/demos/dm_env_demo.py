@@ -22,7 +22,7 @@ def policy_fn(timestep: TimeStep) -> np.ndarray:
 if __name__ == '__main__':
     env_config = LocomotionEnvironmentConfig(with_target=True)
     morphology_specification = default_brittle_star_morphology_specification(num_arms=2, num_segments_per_arm=5,
-                                                                             use_cartesian_actuation=False)
+                                                                             use_cartesian_actuation=True)
     robot_specification = RobotSpecification(morphology_specification=morphology_specification,
                                              controller_specification=None)
     morphology = MJCBrittleStarMorphology(specification=robot_specification)

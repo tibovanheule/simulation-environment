@@ -78,6 +78,7 @@
                     <site name="arm_0_segment_4_muscle_attachment_point_distal_1" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 -0.053033008588991071 -0.053033008588991078"/>
                     <site name="arm_0_segment_4_muscle_attachment_point_distal_2" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 0.053033008588991078 0.053033008588991071"/>
                     <site name="arm_0_segment_4_muscle_attachment_point_distal_3" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 -0.053033008588991071 0.053033008588991078"/>
+                    <site name="arm_0_segment_4_cartesian_end_effector" class="/" pos="0.10000000000000001 0 0"/>
                   </body>
                 </body>
               </body>
@@ -87,6 +88,7 @@
           <site name="arm_0_muscle_attachment_point_1" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 -0.053033008588991071 -0.053033008588991078"/>
           <site name="arm_0_muscle_attachment_point_2" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 0.053033008588991078 0.053033008588991071"/>
           <site name="arm_0_muscle_attachment_point_3" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 -0.053033008588991071 0.053033008588991078"/>
+          <site name="arm_0_cartesian_reference" class="/" euler="-0 -0 -0"/>
         </body>
         <body name="arm_1" pos="-0.25 3.061616997868383e-17 0" euler="0 0 3.1415926535897931">
           <body name="arm_1_segment_0" pos="0 0 0" euler="0 0 0">
@@ -159,6 +161,7 @@
                     <site name="arm_1_segment_4_muscle_attachment_point_distal_1" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 -0.053033008588991071 -0.053033008588991078"/>
                     <site name="arm_1_segment_4_muscle_attachment_point_distal_2" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 0.053033008588991078 0.053033008588991071"/>
                     <site name="arm_1_segment_4_muscle_attachment_point_distal_3" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0.15000000000000002 -0.053033008588991071 0.053033008588991078"/>
+                    <site name="arm_1_segment_4_cartesian_end_effector" class="/" pos="0.10000000000000001 0 0"/>
                   </body>
                 </body>
               </body>
@@ -168,6 +171,7 @@
           <site name="arm_1_muscle_attachment_point_1" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 -0.053033008588991071 -0.053033008588991078"/>
           <site name="arm_1_muscle_attachment_point_2" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 0.053033008588991078 0.053033008588991071"/>
           <site name="arm_1_muscle_attachment_point_3" class="/" type="sphere" rgba="0.71764705882352942 0.33725490196078434 0.34901960784313724 1" size="0.01" pos="0 -0.053033008588991071 0.053033008588991078"/>
+          <site name="arm_1_cartesian_reference" class="/" euler="-0 -0 -3.1415926535897931"/>
         </body>
       </body>
     </body>
@@ -279,14 +283,10 @@
     </spatial>
   </tendon>
   <actuator>
-    <motor name="arm_0_tendon_0_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_0_tendon_0"/>
-    <motor name="arm_0_tendon_1_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_0_tendon_1"/>
-    <motor name="arm_0_tendon_2_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_0_tendon_2"/>
-    <motor name="arm_0_tendon_3_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_0_tendon_3"/>
-    <motor name="arm_1_tendon_0_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_1_tendon_0"/>
-    <motor name="arm_1_tendon_1_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_1_tendon_1"/>
-    <motor name="arm_1_tendon_2_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_1_tendon_2"/>
-    <motor name="arm_1_tendon_3_motor" class="/" ctrllimited="true" forcelimited="true" ctrlrange="-1 1" forcerange="-500 0" gear="500" tendon="arm_1_tendon_3"/>
+    <position name="arm_0_cartesian_y" class="/" ctrllimited="true" ctrlrange="-1 1" gear="0 1 0 0 0 0" site="arm_0_segment_4_cartesian_end_effector" refsite="arm_0_cartesian_reference" kp="100"/>
+    <position name="arm_0_cartesian_z" class="/" ctrllimited="true" ctrlrange="-1 1" gear="0 0 1 0 0 0" site="arm_0_segment_4_cartesian_end_effector" refsite="arm_0_cartesian_reference" kp="100"/>
+    <position name="arm_1_cartesian_y" class="/" ctrllimited="true" ctrlrange="-1 1" gear="0 1 0 0 0 0" site="arm_1_segment_4_cartesian_end_effector" refsite="arm_1_cartesian_reference" kp="100"/>
+    <position name="arm_1_cartesian_z" class="/" ctrllimited="true" ctrlrange="-1 1" gear="0 0 1 0 0 0" site="arm_1_segment_4_cartesian_end_effector" refsite="arm_1_cartesian_reference" kp="100"/>
   </actuator>
   <sensor>
     <framepos name="central_disc_framepos" objtype="geom" objname="central_disc_disc"/>
