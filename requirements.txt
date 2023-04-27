@@ -1,0 +1,1 @@
+Erpy @ git+ssh://git@github.com/Co-Evolve/erpy.git
